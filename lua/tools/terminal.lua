@@ -17,7 +17,7 @@ local function open_floating_window(opts)
   else
     buffer = vim.api.nvim_create_buf(false, true)
     vim.api.nvim_set_option_value('bufhidden', 'wipe', {buf = buffer})
-    vim.api.nvim_set_option_value('filetype', 'explorer', {buf = buffer})
+    vim.api.nvim_set_option_value('filetype', 'terminal', {buf = buffer})
   end
 
   local width  = math.floor(vim.o.columns / 2)
@@ -65,11 +65,20 @@ local function is_floating_window(window)
   return window == state.floating.window
 end
 
-local function render()
+local function start_terminal()
   local buffer = state.floating.buffer
   if vim.b[buffer].terminal_job_id then return end
 
   vim.fn.termopen(vim.o.shell)
+end
+
+local function stop_terminal()
+  if vim.api.nvim_buf_is_valid(state.floating.buffer) then
+    local job_id = vim.b[state.floating.buffer].terminal_job_id
+    if job_id then
+      vim.fn.jobstop(job_id)
+    end
+  end
 end
 
 local function enable_keymaps()
@@ -82,15 +91,6 @@ local function enable_keymaps()
   vim.keymap.set('n', 'q', function()
     hide_floating_window()
   end, opts)
-end
-
-local function stop_terminal()
-  if vim.api.nvim_buf_is_valid(state.floating.buffer) then
-    local job_id = vim.b[state.floating.buffer].terminal_job_id
-    if job_id then
-      vim.fn.jobstop(job_id)
-    end
-  end
 end
 
 local function attach_autocmd()
@@ -136,6 +136,9 @@ local function attach_autocmd()
         if is_floating_window(window)
         and not is_floating_buffer(buffer) then
           hide_floating_window()
+          vim.schedule(function()
+            vim.api.nvim_set_current_buf(buffer)
+          end)
         end
       end)
     end
@@ -146,7 +149,7 @@ function M.toggle()
   local hidden = hide_floating_window()
   if not hidden then
     state.floating = open_floating_window({buffer = state.floating.buffer})
-    render()
+    start_terminal()
     enable_keymaps()
     attach_autocmd()
   end

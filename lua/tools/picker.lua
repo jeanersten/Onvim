@@ -12,7 +12,9 @@ local state = {
   title          = 'Picker',
   files          = {},
   selected_index = 1,
-  loading        = false
+  max_display    = 100,
+  loading        = false,
+  debounce_timer = nil
 }
 
 local icons = {
@@ -197,56 +199,64 @@ local function get_prompt_query()
   return line:sub(#prompt + 1)
 end
 
-local function update_file_list()
-  local query = get_prompt_query()
-
-  if not query or query == '' then
-    state.files = {}
-    state.selected_index = 1
-    render()
-
-    return
+local function update_files()
+  if state.debounce_timer then
+    vim.fn.timer_stop(state.debounce_timer)
   end
 
-  state.loading = true
-  render()
+  state.debounce_timer = vim.fn.timer_start(200, function()
+    local query = get_prompt_query()
+    if not query or query == '' then
+      state.files = {}
+      state.selected_index = 1
+      render()
 
-  query = vim.fn.shellescape(query)
-  local command = string.format('rg --files --color never --ignore-case --glob "*%s*"', query)
-  vim.fn.jobstart(command, {
-    stdout_buffered = true,
-    on_stdout = function(_, data)
-      if data then
-        local files = {}
-
-        for _, path in ipairs(data) do
-          if path ~= '' and vim.fn.filereadable(path) == 1 then
-            table.insert(files, path)
-          end
-        end
-
-        table.sort(files)
-        state.files = files
-        state.loading = false
-        vim.schedule(render)
-      end
-    end,
-    on_exit = function()
-      state.loading = false
+      return
     end
-  })
-end
 
+    state.loading = true
+    render()
+
+    local query_lower = query:lower()
+    local results     = {}
+
+    vim.schedule(function()
+      vim.fn.jobstart('rg --files --color never --ignore-case --hidden', {
+        stdout_buffered = true,
+        on_stdout = function(_, data)
+          if data then
+            for _, path in ipairs(data) do
+              if path ~= '' and #results < state.max_display then
+                if path:lower():find(query_lower, 1, true)
+                  and vim.fn.filereadable(path) == 1 then
+                  results[#results + 1] = path
+                end
+              end
+            end
+          end
+        end,
+        on_exit = function()
+          table.sort(results)
+          state.files = results
+          state.loading = false
+          vim.schedule(function()
+            render()
+          end)
+        end
+      })
+    end)
+  end)
+end
 
 local function handle_file_open()
   if #state.files == 0 then
     return
   end
 
-  local selected_file = state.files[state.selected_index]
-  if selected_file then
+  local file = state.files[state.selected_index]
+  if file then
     hide_floating_window()
-    vim.cmd('edit ' .. vim.fn.fnameescape(selected_file))
+    vim.cmd('edit ' .. vim.fn.fnameescape(file))
   end
 end
 
@@ -360,6 +370,9 @@ local function attach_autocmd()
         if is_floating_window(window)
         and not is_floating_buffer(buffer) then
           hide_floating_window()
+          vim.schedule(function()
+            vim.api.nvim_set_current_buf(buffer)
+          end)
         end
       end)
     end
@@ -418,7 +431,7 @@ local function attach_autocmd()
         end)
       end
 
-      update_file_list()
+      update_files()
     end
   })
 
@@ -426,7 +439,7 @@ local function attach_autocmd()
     group = 'ZPickerProtect',
     buffer = state.floating_prompt.buffer,
     callback = function()
-      update_file_list()
+      update_files()
     end
   })
 
@@ -442,7 +455,7 @@ function M.toggle()
   local hidden = hide_floating_window()
   if not hidden then
     state.floating_prompt, state.floating_list = open_floating_window({buffer = state.floating_prompt.buffer}, {buffer = state.floating_list.buffer})
-    update_file_list()
+    update_files()
     enable_keymaps()
     attach_autocmd()
   end

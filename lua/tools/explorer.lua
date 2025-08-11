@@ -617,6 +617,9 @@ local function attach_autocmd()
         if is_floating_window(window)
         and not is_floating_buffer(buffer) then
           hide_floating_window()
+          vim.schedule(function()
+            vim.api.nvim_set_current_buf(buffer)
+          end)
         end
       end)
     end
