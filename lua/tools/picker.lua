@@ -11,7 +11,6 @@ local state = {
   },
   title          = 'Picker',
   files          = {},
-  selected_index = 1,
   max_display    = 100,
   loading        = false,
   debounce_timer = nil,
@@ -176,10 +175,8 @@ local function render()
 
   if #state.files == 0 then
     lines = {string.format(' %s %s', icons.file_normal, 'Nothing to display over here..')}
-    state.selected_index = 1
   elseif state.loading == true then
     lines = {string.format(' %s %s', icons.file_normal, 'Loading..')}
-    state.selected_index = 1
   else
     for i, filename in ipairs(state.files) do
       lines[i] = string.format(' %s %s', get_file_icon(filename), filename)
@@ -190,9 +187,9 @@ local function render()
     vim.api.nvim_set_option_value('modifiable', true, {buf = state.floating_list.buffer})
     vim.api.nvim_buf_set_lines(state.floating_list.buffer, 0, -1, false, lines)
     vim.api.nvim_set_option_value('modifiable', false, {buf = state.floating_list.buffer})
+    vim.api.nvim_buf_clear_namespace(state.floating_list.buffer, state.commentns, 0, -1)
   end
 
-  vim.api.nvim_buf_clear_namespace(state.floating_list.buffer, state.commentns, 0, -1)
   if #state.files == 0 or state.loading == true then
     vim.api.nvim_buf_add_highlight(state.floating_list.buffer, state.commentns, 'Comment', 0, 0, -1)
   end
@@ -214,7 +211,6 @@ local function update_files()
     local query = get_prompt_query()
     if not query or query == '' then
       state.files = {}
-      state.selected_index = 1
       render()
 
       return
@@ -254,16 +250,23 @@ local function update_files()
   end)
 end
 
+local function get_selected_file()
+  local item_index = vim.api.nvim_win_get_cursor(state.floating_list.window)[1]
+  if item_index > #state.files then
+    return nil
+  end
+
+  return state.files[item_index]
+end
+
 local function handle_file_open()
-  if #state.files == 0 then
+  local file = get_selected_file()
+  if not file then
     return
   end
 
-  local file = state.files[state.selected_index]
-  if file then
-    hide_floating_window()
-    vim.cmd('edit ' .. vim.fn.fnameescape(file))
-  end
+  hide_floating_window()
+  vim.cmd('edit ' .. vim.fn.fnameescape(file))
 end
 
 local function fix_cursor_position()
@@ -287,28 +290,23 @@ local function fix_cursor_position()
 end
 
 local function navigate_through(direction)
-  local lines = vim.api.nvim_buf_get_lines(state.floating_list.buffer, 0, -1, false)
+  local total_lines = vim.api.nvim_buf_line_count(state.floating_list.buffer)
+  local cursor = vim.api.nvim_win_get_cursor(state.floating_list.window)
+  local row    = cursor[1]
 
-  if #lines == 0 then
-    return
+  local target_row = row + direction
+
+  if target_row < 1 then
+    target_row = total_lines
+  elseif target_row > total_lines then
+    target_row = 1
   end
 
-  state.selected_index = state.selected_index + direction
-  if state.selected_index > #lines then
-    state.selected_index = 1
-  elseif state.selected_index < 1 then
-    state.selected_index = #lines
-  end
-
-  vim.api.nvim_win_set_cursor(state.floating_list.window, {state.selected_index, 0})
+  vim.api.nvim_win_set_cursor(state.floating_list.window, {target_row, 0})
 end
 
 local function enable_keymaps()
   local opts = {buffer = state.floating_prompt.buffer, silent = true}
-
-  vim.keymap.set({'n', 'i'}, '<CR>', function()
-    handle_file_open()
-  end, opts)
 
   vim.keymap.set({'n', 'i'}, '<Tab>', function()
     navigate_through(1)
@@ -316,6 +314,14 @@ local function enable_keymaps()
 
   vim.keymap.set({'n', 'i'}, '<S-Tab>', function()
     navigate_through(-1)
+  end, opts)
+
+  vim.keymap.set({'n', 'i'}, '<CR>', function()
+    handle_file_open()
+  end, opts)
+
+  vim.keymap.set({'n', 'i'}, '<2-LeftMouse>', function()
+    handle_file_open()
   end, opts)
 
   vim.keymap.set('n', '<Esc>', function()
