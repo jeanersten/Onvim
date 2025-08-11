@@ -1,0 +1,10 @@
+require('core.globals')
+require('core.keymaps')
+require('core.lsp')
+require('core.options')
+require('core.ui.statusline')
+require('core.ui.tabline')
+
+require('tools.explorer').setup()
+require('tools.picker').setup()
+require('tools.terminal').setup()
