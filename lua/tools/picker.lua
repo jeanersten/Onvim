@@ -14,7 +14,8 @@ local state = {
   selected_index = 1,
   max_display    = 100,
   loading        = false,
-  debounce_timer = nil
+  debounce_timer = nil,
+  commentns      = vim.api.nvim_create_namespace('ZPickerHighlight')
 }
 
 local icons = {
@@ -189,6 +190,11 @@ local function render()
     vim.api.nvim_set_option_value('modifiable', true, {buf = state.floating_list.buffer})
     vim.api.nvim_buf_set_lines(state.floating_list.buffer, 0, -1, false, lines)
     vim.api.nvim_set_option_value('modifiable', false, {buf = state.floating_list.buffer})
+  end
+
+  vim.api.nvim_buf_clear_namespace(state.floating_list.buffer, state.commentns, 0, -1)
+  if #state.files == 0 or state.loading == true then
+    vim.api.nvim_buf_add_highlight(state.floating_list.buffer, state.commentns, 'Comment', 0, 0, -1)
   end
 end
 
