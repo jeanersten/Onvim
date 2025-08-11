@@ -84,13 +84,9 @@ end
 local function enable_keymaps()
   local opts = {buffer = state.floating.buffer, silent = true}
 
-  vim.keymap.set('n', '<Esc>', function()
-    hide_floating_window()
-  end, opts)
+  vim.keymap.set('n', '<Esc>', hide_floating_window, opts)
 
-  vim.keymap.set('n', 'q', function()
-    hide_floating_window()
-  end, opts)
+  vim.keymap.set('n', 'q', hide_floating_window, opts)
 end
 
 local function attach_autocmd()

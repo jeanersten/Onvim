@@ -566,13 +566,9 @@ local function enable_keymaps()
 
   vim.keymap.set('n', 'o', handle_item_open_in_system, opts)
 
-  vim.keymap.set('n', 'y', function()
-    update_items()
-  end, opts)
+  vim.keymap.set('n', 'y', update_items, opts)
 
-  vim.keymap.set('n', '-', function()
-    handle_go_up_directory()
-  end, opts)
+  vim.keymap.set('n', '-', handle_go_up_directory, opts)
 
   vim.keymap.set('n', '~', function()
     state.current_directory = vim.fn.expand('~')
@@ -586,13 +582,9 @@ local function enable_keymaps()
     vim.api.nvim_win_set_cursor(state.floating.window, {state.header_row_height + 1, 0})
   end, opts)
 
-  vim.keymap.set('n', '<Esc>', function()
-    hide_floating_window()
-  end, opts)
+  vim.keymap.set('n', '<Esc>', hide_floating_window, opts)
 
-  vim.keymap.set('n', 'q', function()
-    hide_floating_window()
-  end, opts)
+  vim.keymap.set('n', 'q', hide_floating_window, opts)
 end
 
 local function attach_autocmd()

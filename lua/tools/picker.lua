@@ -316,21 +316,13 @@ local function enable_keymaps()
     navigate_through(-1)
   end, opts)
 
-  vim.keymap.set({'n', 'i'}, '<CR>', function()
-    handle_file_open()
-  end, opts)
+  vim.keymap.set({'n', 'i'}, '<CR>', handle_file_open, opts)
 
-  vim.keymap.set({'n', 'i'}, '<2-LeftMouse>', function()
-    handle_file_open()
-  end, opts)
+  vim.keymap.set({'n', 'i'}, '<2-LeftMouse>', handle_file_open, opts)
 
-  vim.keymap.set('n', '<Esc>', function()
-    hide_floating_window()
-  end, opts)
+  vim.keymap.set('n', '<Esc>', hide_floating_window, opts)
 
-  vim.keymap.set('n', 'q', function()
-    hide_floating_window()
-  end, opts)
+  vim.keymap.set('n', 'q', hide_floating_window, opts)
 end
 
 local function attach_autocmd()
