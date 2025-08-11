@@ -11,6 +11,7 @@ local state = {
   workspace_directory = vim.fn.getcwd(),
   current_directory   = vim.fn.getcwd(),
   header_row_height   = 3,
+  last_cursor_row     = 4,
   items               = {}
 }
 
@@ -70,6 +71,9 @@ end
 local function hide_floating_window()
   local hidden = false
   if vim.api.nvim_win_is_valid(state.floating.window) then
+    local cursor = vim.api.nvim_win_get_cursor(state.floating.window)
+    state.last_cursor_row = cursor[1]
+
     vim.api.nvim_win_hide(state.floating.window)
     state.floating.window = -1
     hidden = true
@@ -260,6 +264,17 @@ local function get_current_item()
   end
 
   return state.items[item_index]
+end
+
+local function handle_go_up_directory()
+  if system.is_root(state.current_directory) then
+    vim.notify('Already at root', vim.log.levels.INFO)
+  end
+
+  local parent = vim.fn.fnamemodify(state.current_directory, ':h')
+  state.current_directory = parent
+  update_items()
+  vim.api.nvim_win_set_cursor(state.floating.window, {state.header_row_height + 1, 0})
 end
 
 local function handle_item_select()
@@ -502,10 +517,6 @@ local function handle_item_delete()
 end
 
 local function constrain_cursor_position()
-  if not state.floating.window or not vim.api.nvim_win_is_valid(state.floating.window) then
-    return
-  end
-
   local cursor = vim.api.nvim_win_get_cursor(state.floating.window)
   local row    = cursor[1]
   local column = cursor[2]
@@ -557,6 +568,10 @@ local function enable_keymaps()
 
   vim.keymap.set('n', 'y', function()
     update_items()
+  end, opts)
+
+  vim.keymap.set('n', '-', function()
+    handle_go_up_directory()
   end, opts)
 
   vim.keymap.set('n', '~', function()
@@ -652,6 +667,11 @@ function M.toggle()
     update_items()
     enable_keymaps()
     attach_autocmd()
+
+    local total_lines = vim.api.nvim_buf_line_count(state.floating.buffer)
+    local target_row  = math.min(state.last_cursor_row, total_lines)
+    target_row = math.max(target_row, state.header_row_height + 1)
+    vim.api.nvim_win_set_cursor(state.floating.window, {target_row, 0})
   end
 end
 
