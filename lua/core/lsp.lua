@@ -1,2 +1,13 @@
-vim.lsp.enable('clangd')              -- C/C++/Objective-C (see 'lsp/clangd.lua')
-vim.lsp.enable('lua-language-server') -- lua (see 'lsp/lua-language-server.lua')
+vim.lsp.enable('clangd')
+vim.lsp.enable('lua-language-server')
+
+vim.diagnostic.config({
+  virtual_text = {
+    enabled = true,
+    prefix = '',
+    spacing = 1,
+  },
+  signs = true,
+  underline = true,
+  update_in_insert = false,
+})
