@@ -1,7 +1,6 @@
 local M = {}
 
 local system = require('utils.system')
-
 local state = {
   floating = {
     buffer = -1,
@@ -62,8 +61,6 @@ local function open_floating_window(opts)
   vim.api.nvim_set_option_value('winfixwidth', true, {win = window})
   vim.api.nvim_set_option_value('winfixheight', true, {win = window})
   vim.api.nvim_set_option_value('cursorline', true, {win = window})
-  vim.api.nvim_set_hl(0, 'FloatBorder', {link = 'Normal'})
-  vim.api.nvim_set_hl(0, 'NormalFloat', {link = 'Normal'})
 
   return {buffer = buffer, window = window}
 end
@@ -289,7 +286,9 @@ local function handle_item_select()
     vim.api.nvim_win_set_cursor(state.floating.window, {state.header_row_height + 1, 0})
   else
     hide_floating_window()
-    vim.cmd('edit ' .. vim.fn.fnameescape(item.path))
+    vim.schedule(function()
+      vim.cmd('edit ' .. vim.fn.fnameescape(item.path))
+    end)
   end
 end
 

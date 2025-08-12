@@ -40,8 +40,6 @@ local function open_floating_window(opts)
   vim.api.nvim_set_option_value('winfixbuf', true, {win = window})
   vim.api.nvim_set_option_value('winfixwidth', true, {win = window})
   vim.api.nvim_set_option_value('winfixheight', true, {win = window})
-  vim.api.nvim_set_hl(0, 'FloatBorder', {link = 'Normal'})
-  vim.api.nvim_set_hl(0, 'NormalFloat', {link = 'Normal'})
 
   return {buffer = buffer, window = window}
 end

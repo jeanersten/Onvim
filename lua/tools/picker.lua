@@ -78,8 +78,6 @@ local function open_floating_window(opts_prompt, opts_list)
   vim.api.nvim_set_option_value('winfixwidth', true, {win = window_prompt})
   vim.api.nvim_set_option_value('winfixheight', true, {win = window_prompt})
   vim.api.nvim_set_option_value('wrap', true, {win = window_prompt})
-  vim.api.nvim_set_hl(0, 'FloatBorder', {link = 'Normal'})
-  vim.api.nvim_set_hl(0, 'NormalFloat', {link = 'Normal'})
 
   local config_list = {
     relative  = 'editor',
@@ -98,8 +96,6 @@ local function open_floating_window(opts_prompt, opts_list)
   vim.api.nvim_set_option_value('winfixwidth', true, {win = window_list})
   vim.api.nvim_set_option_value('winfixheight', true, {win = window_list})
   vim.api.nvim_set_option_value('cursorline', true, {win = window_list})
-  vim.api.nvim_set_hl(0, 'FloatBorder', {link = 'Normal'})
-  vim.api.nvim_set_hl(0, 'NormalFloat', {link = 'Normal'})
 
   return {buffer = buffer_prompt, window = window_prompt},
          {buffer = buffer_list  , window = window_list}
@@ -108,12 +104,12 @@ end
 local function hide_floating_window()
   local hidden = false
   if vim.api.nvim_win_is_valid(state.floating_prompt.window) then
-    vim.api.nvim_win_close(state.floating_prompt.window, true)
+    vim.api.nvim_win_hide(state.floating_prompt.window)
     state.floating_prompt.window = -1
     hidden = true
   end
   if vim.api.nvim_win_is_valid(state.floating_list.window) then
-    vim.api.nvim_win_close(state.floating_list.window, true)
+    vim.api.nvim_win_hide(state.floating_list.window)
     state.floating_list.window = -1
     hidden = true
   end
@@ -188,16 +184,21 @@ local function render()
     vim.api.nvim_buf_set_lines(state.floating_list.buffer, 0, -1, false, lines)
     vim.api.nvim_set_option_value('modifiable', false, {buf = state.floating_list.buffer})
     vim.api.nvim_buf_clear_namespace(state.floating_list.buffer, state.commentns, 0, -1)
+
+    if #state.files == 0 or state.loading == true then
+      vim.api.nvim_buf_add_highlight(state.floating_list.buffer, state.commentns, 'Comment', 0, 0, -1)
+    end
   end
 
-  if #state.files == 0 or state.loading == true then
-    vim.api.nvim_buf_add_highlight(state.floating_list.buffer, state.commentns, 'Comment', 0, 0, -1)
-  end
 end
 
 local function get_prompt_query()
-  local line   = vim.api.nvim_buf_get_lines(state.floating_prompt.buffer, 0, 1, false)[1]
-  local prompt = vim.fn.prompt_getprompt(state.floating_prompt.buffer)
+  local line = ''
+  local prompt = ''
+  if vim.api.nvim_buf_is_valid(state.floating_prompt.buffer) then
+    line   = vim.api.nvim_buf_get_lines(state.floating_prompt.buffer, 0, 1, false)[1]
+    prompt = vim.fn.prompt_getprompt(state.floating_prompt.buffer)
+  end
 
   return line:sub(#prompt + 1)
 end
@@ -266,7 +267,9 @@ local function handle_file_open()
   end
 
   hide_floating_window()
-  vim.cmd('edit ' .. vim.fn.fnameescape(file))
+  vim.schedule(function()
+    vim.cmd('edit ' .. vim.fn.fnameescape(file))
+  end)
 end
 
 local function fix_cursor_position()
