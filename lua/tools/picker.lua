@@ -14,7 +14,7 @@ local state = {
   max_display    = 100,
   loading        = false,
   debounce_timer = nil,
-  commentns      = vim.api.nvim_create_namespace('ZPickerHighlight')
+  dim_ns     = vim.api.nvim_create_namespace('ZPickerDim')
 }
 
 local icons = {
@@ -183,10 +183,10 @@ local function render()
     vim.api.nvim_set_option_value('modifiable', true, {buf = state.floating_list.buffer})
     vim.api.nvim_buf_set_lines(state.floating_list.buffer, 0, -1, false, lines)
     vim.api.nvim_set_option_value('modifiable', false, {buf = state.floating_list.buffer})
-    vim.api.nvim_buf_clear_namespace(state.floating_list.buffer, state.commentns, 0, -1)
+    vim.api.nvim_buf_clear_namespace(state.floating_list.buffer, state.dim_ns, 0, -1)
 
     if #state.files == 0 or state.loading == true then
-      vim.api.nvim_buf_add_highlight(state.floating_list.buffer, state.commentns, 'Comment', 0, 0, -1)
+      vim.api.nvim_buf_add_highlight(state.floating_list.buffer, state.dim_ns, 'Comment', 0, 0, -1)
     end
   end
 
@@ -286,9 +286,9 @@ local function fix_cursor_position()
       vim.api.nvim_win_set_cursor(0, {1, prompt_text_length})
     end
   elseif (window == state.floating_list.window) then
-    vim.schedule(function()
+    if vim.api.nvim_buf_is_valid(state.floating_prompt.buffer) then
       vim.api.nvim_set_current_win(state.floating_prompt.window)
-    end)
+    end
   end
 end
 
