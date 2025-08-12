@@ -29,35 +29,31 @@ local palette = {
 
   -- Special
   accent  = '#5e81ac',  -- Accent color
-  warning = '#d08770',  -- Warning color
+  warning = '#e5c07b',  -- more yellow warning color
   error   = '#bf616a',  -- Error color
   success = '#a3be8c',  -- Success color
 }
 
-local function transparent(color)
-  return vim.g.zaman_transparent and 'NONE' or color
-end
-
-vim.api.nvim_set_hl(0, 'Normal',      {fg = palette.fg0, bg = transparent(palette.bg1)})
+vim.api.nvim_set_hl(0, 'Normal',      {fg = palette.fg0, bg = palette.bg1})
 vim.api.nvim_set_hl(0, 'NormalFloat', {fg = palette.fg0, bg = palette.bg1})
-vim.api.nvim_set_hl(0, 'FloatBorder', {fg = palette.fg2, bg = palette.bg1})
-vim.api.nvim_set_hl(0, 'FloatTitle',  {fg = palette.fg1, bg = palette.bg2, bold = true})
-vim.api.nvim_set_hl(0, 'NormalNC',    {fg = palette.fg1, bg = transparent(palette.bg1)})
-vim.api.nvim_set_hl(0, 'SignColumn',  {fg = palette.fg3, bg = transparent(palette.bg1)})
-vim.api.nvim_set_hl(0, 'EndOfBuffer', {fg = palette.bg3, bg = transparent(palette.bg1)})
+vim.api.nvim_set_hl(0, 'FloatBorder', {fg = palette.fg3, bg = palette.bg1})
+vim.api.nvim_set_hl(0, 'FloatTitle',  {fg = palette.fg1, bg = palette.bg1, bold = true})
+vim.api.nvim_set_hl(0, 'NormalNC',    {fg = palette.fg0, bg = palette.bg1})
+vim.api.nvim_set_hl(0, 'SignColumn',  {fg = palette.fg3, bg = palette.bg1})
+vim.api.nvim_set_hl(0, 'EndOfBuffer', {fg = palette.bg3, bg = palette.bg1})
 
 vim.api.nvim_set_hl(0, 'Cursor',       {fg = palette.bg1, bg = palette.fg0})
 vim.api.nvim_set_hl(0, 'CursorLine',   {bg = palette.bg2})
 vim.api.nvim_set_hl(0, 'CursorColumn', {bg = palette.bg2})
 vim.api.nvim_set_hl(0, 'ColorColumn',  {bg = palette.bg2})
 vim.api.nvim_set_hl(0, 'CursorLineNr', {fg = palette.accent, bold = true})
-vim.api.nvim_set_hl(0, 'LineNr',       {fg = palette.fg3, bg = transparent(palette.bg1)})
+vim.api.nvim_set_hl(0, 'LineNr',       {fg = palette.fg3, bg = palette.bg})
 
 vim.api.nvim_set_hl(0, 'Visual',    {bg = '#303030'})
 vim.api.nvim_set_hl(0, 'VisualNOS', {bg = '#303030'})
 
 vim.api.nvim_set_hl(0, 'Search',     {fg = palette.fg0, bg = '#3a3a2a'})
-vim.api.nvim_set_hl(0, 'IncSearch',  {fg = palette.fg0, bg = '#453a28'})
+vim.api.nvim_set_hl(0, 'IncSearch',  {fg = palette.fg0, bg = '#3a3a2a'})
 vim.api.nvim_set_hl(0, 'Substitute', {fg = palette.fg0, bg = '#3a2828'})
 
 vim.api.nvim_set_hl(0, 'ModeMsg',    {fg = palette.green, bold = true})
@@ -82,7 +78,7 @@ vim.api.nvim_set_hl(0, 'WinSeparator', {fg = palette.bg4})
 vim.api.nvim_set_hl(0, 'VertSplit',    {fg = palette.bg4})
 
 vim.api.nvim_set_hl(0, 'Folded',     {fg = palette.fg2, bg = palette.bg2})
-vim.api.nvim_set_hl(0, 'FoldColumn', {fg = palette.fg3, bg = transparent(palette.bg1)})
+vim.api.nvim_set_hl(0, 'FoldColumn', {fg = palette.fg3, bg = palette.bg1})
 
 vim.api.nvim_set_hl(0, 'DiffAdd',    {fg = palette.green, bg = palette.bg2})
 vim.api.nvim_set_hl(0, 'DiffChange', {fg = palette.yellow, bg = palette.bg2})
@@ -211,7 +207,3 @@ vim.api.nvim_set_hl(0, 'DiagnosticUnderlineError', {undercurl = true, sp = palet
 vim.api.nvim_set_hl(0, 'DiagnosticUnderlineWarn',  {undercurl = true, sp = palette.warning})
 vim.api.nvim_set_hl(0, 'DiagnosticUnderlineInfo',  {undercurl = true, sp = palette.cyan})
 vim.api.nvim_set_hl(0, 'DiagnosticUnderlineHint',  {undercurl = true, sp = palette.fg2})
-
-vim.api.nvim_set_hl(0, 'GitAdd',    {fg = palette.green})
-vim.api.nvim_set_hl(0, 'GitChange', {fg = palette.yellow})
-vim.api.nvim_set_hl(0, 'GitDelete', {fg = palette.red})
