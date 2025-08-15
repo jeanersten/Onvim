@@ -445,12 +445,15 @@ local function handle_item_create()
       local lines  = vim.api.nvim_buf_get_lines(buffer, 0, -1, false)
 
       local target_name = vim.fn.fnamemodify(path, ':t')
+      local target_line = nil
       for i, line in ipairs(lines) do
         local pattern = '%f[%w]' .. vim.pesc(target_name) .. '%f[%W]'
         if line:find(pattern) then
-          vim.api.nvim_win_set_cursor(state.floating.window, {i, 0})
-          break
+          target_line = i
         end
+      end
+      if target_line then
+        vim.api.nvim_win_set_cursor(state.floating.window, {target_line, 0})
       end
     end
   end)

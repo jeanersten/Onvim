@@ -16,7 +16,6 @@ local function open_floating_window(opts)
     buffer = opts.buffer
   else
     buffer = vim.api.nvim_create_buf(false, true)
-    vim.api.nvim_set_option_value('bufhidden', 'wipe', {buf = buffer})
     vim.api.nvim_set_option_value('filetype', 'terminal', {buf = buffer})
   end
 
@@ -67,14 +66,15 @@ local function start_terminal()
   local buffer = state.floating.buffer
   if vim.b[buffer].terminal_job_id then return end
 
-  vim.fn.termopen(vim.o.shell)
+  vim.fn.jobstart(vim.o.shell, {term=true})
 end
 
 local function stop_terminal()
   if vim.api.nvim_buf_is_valid(state.floating.buffer) then
     local job_id = vim.b[state.floating.buffer].terminal_job_id
     if job_id then
-      vim.fn.jobstop(job_id)
+      pcall(vim.api.nvim_chan_send, job_id, 'exit\r')
+      pcall(vim.fn.jobstop, job_id)
     end
   end
 end
