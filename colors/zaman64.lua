@@ -3,6 +3,9 @@ if vim.fn.exists('syntax_on') then
   vim.cmd('syntax reset')
 end
 
+vim.o.background  = "dark"
+vim.g.colors_name = "zaman64"
+
 local palette = {
   -- Background
   bg0     = '#0f0f0f',  -- Deepest background
