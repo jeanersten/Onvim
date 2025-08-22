@@ -6,17 +6,17 @@ function U.is_windows()
 end
 
 function U.is_linux()
-U.is_linux   = vim.uv.os_uname().sysname == 'Linux'
+  return vim.uv.os_uname().sysname == 'Linux'
 end
 
 function U.is_macos()
-U.is_macos   = vim.uv.os_uname().sysname == 'Darwin'
+  return vim.uv.os_uname().sysname == 'Darwin'
 end
 
 function U.is_root(directory)
-  if U.is_windows and directory:match('^[A-Za-z]:[\\/]?$') then
+  if U.is_windows() and directory:match('^[A-Za-z]:[\\/]?$') then
     return true
-  elseif not U.is_windows and directory == '/' then
+  elseif not U.is_windows() and directory == '/' then
     return true
   end
 
@@ -24,15 +24,15 @@ function U.is_root(directory)
 end
 
 function U.get_separator()
-  return U.is_windows and '\\' or '/'
+  return U.is_windows() and '\\' or '/'
 end
 
 function U.get_open_command()
   if U.is_windows() then
     return 'explorer'
-  elseif U.is_macos() == 'Darwin' then
+  elseif U.is_macos() then
     return 'open'
-  elseif U.is_linux() == 'Linux' then
+  elseif U.is_linux() then
     return 'xdg-open'
   end
 end

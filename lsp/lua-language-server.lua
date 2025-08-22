@@ -9,7 +9,7 @@ return {
     '.stylua.toml',
     'stylua.toml',
     'selene.toml',
-    'selene.yml',
+    'selene.yml'
   },
   settings = {
     Lua = {

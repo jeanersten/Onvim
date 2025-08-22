@@ -7,6 +7,6 @@ return {
     '.clang-format',
     '.git',
     'compile_commands.json',
-    'compile_flags.txt',
+    'compile_flags.txt'
   }
 }
